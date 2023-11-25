@@ -77,6 +77,18 @@
         0px 0px 20px var(--bgColor);
     }
 
+    /* Make the input invisible but clickable */
+    input[type="text"] {
+      display: block;
+      margin-top: 3vh;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;     
+      padding: 1vh;
+    }
+
     /* Your style here*/
   </style>
 </head>
@@ -85,6 +97,7 @@
   <!-- Your content here -->
 
   <h1>Book tracking</h1>
+  <input type="text" id="invisibleInput">
   <div id="bookStats"></div>
 
 
