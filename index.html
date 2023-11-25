@@ -1,0 +1,316 @@
+<!-- versione 26/11/2023 -->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/egg.js/1.0/egg.min.js"></script>
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <title>Book Tracking</title>
+  <style>
+    /* CSS Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --highlight: #23CE6B;
+      --txtColor: #272d2d;
+      --bgColor: #F6F8FF;
+    }
+
+    body {
+      padding: 2vh;
+      background-color: var(--bgColor);
+    }
+
+    .title {
+      font-weight: 700;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      text-align: center;
+      margin-bottom: 1em;
+      border-bottom: 2px solid var(--txtColor);
+    }
+
+    #bookStats {
+      display: flex;
+      gap: 3px 3px;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stats {
+      border: 2px solid var(--txtColor);
+      padding: 7px;
+      color: var(--txtColor);
+      visibility: hidden;
+    }
+
+    .pageRemaining {
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+
+    .ECD {
+      background-color: var(--highlight);
+    }
+
+    .median {
+      font-weight: 700;
+      background-color: var(--highlight);
+    }
+
+    h1 {
+      display: block;
+      margin: 0 auto;
+      padding-bottom: 3vh;
+      text-align: center;
+      font-family: Verdana, Geneva, sans-serif;
+      color: var(--txtColor);
+      text-shadow: 0px 0px 5px var(--bgColor), 0px 0px 10px var(--bgColor), 0px 2px 2px var(--txtColor),
+        0px 0px 20px var(--bgColor);
+    }
+
+    /* Your style here*/
+  </style>
+</head>
+
+<body>
+  <!-- Your content here -->
+
+  <h1>Book tracking</h1>
+  <div id="bookStats"></div>
+
+
+  <script type="module">
+
+    // Your script here
+    //const sheetID = 'sheetID';
+    const sheetID = '1oCkg-4SfRpT3ZyKhqY0l2T4HhfeWj7oHQjLZrA9dTjM';
+    const base = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?`
+    const sheetName = 'Book Tracker';
+    const query = encodeURIComponent('Select A,B,C,D,E,F');
+    const url = `${base}&sheet=${sheetName}&tq=${query}`;
+    const data = [];
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    function init() {
+      fetch(url)
+        .then(res => res.text())
+        .then(rep => {
+          const jsData = JSON.parse(rep.substr(47).slice(0, -2));
+          const colz = jsData.table.cols.map(heading => heading.label.toLowerCase().replace(/\s/g, '')).slice(1);
+          const pagesReadData = {};
+
+           // Extract total pages from the second row
+      const totalPageRow = jsData.table.rows[0];
+      if (!totalPageRow) {
+        console.error('No row with total pages found.');
+        return;
+      }
+
+      // Create books object with keys from colz and values from totalPageRow
+      const books = {};
+      colz.forEach((col, index) => {
+        books[col] = totalPageRow.c[index + 1]?.v || 0;
+      });
+
+          jsData.table.rows.slice(2).forEach(row => {
+            colz.forEach((col, index) => {
+              const columnName = Object.keys(books)[index];
+              if (columnName !== undefined) {
+                const pagesRead = row.c[index + 1]?.v;
+                if (typeof pagesRead === 'number') {
+                  // Store cumulative pages read data for stats
+                  if (!pagesReadData[columnName]) {
+                    pagesReadData[columnName] = [pagesRead]; // Initialize with the first value
+                  } else {
+                    pagesReadData[columnName].push(pagesRead);
+                  }
+                }
+              }
+            });
+          });
+
+          // Calculate and display stats
+          Object.keys(pagesReadData).forEach(book => {
+            const statsDiv = document.createElement('div');
+            statsDiv.classList.add('stats');
+            statsDiv.innerHTML = `<div class="title">${book}:</div>`;
+            const differences = calculateDifferences(pagesReadData[book]);
+            const lastValue = pagesReadData[book][pagesReadData[book].length - 1];
+            const average = calculateAverage(differences);
+            const median = calculateMedian(differences);
+            const mode = calculateMode(differences);
+
+            // Calculate and display remaining pages
+            const remainingPages = books[book] - lastValue;
+            statsDiv.innerHTML += `<div class="pageRemaining">${remainingPages} left</div>`;
+
+            statsDiv.innerHTML += `<p>Average: ${average.toFixed(2)}</p>`;
+            statsDiv.innerHTML += `<p>Mode: ${mode}</p>`;
+
+            // Calculate and display Estimated Time to Completion (ETC)
+            const etc = calculateETC(books[book], median, lastValue);
+            statsDiv.innerHTML += `<div class="ETC">ETC: ${etc} days</div>`;
+
+            statsDiv.innerHTML += `<div class="median">Median: ${median}</div>`;
+
+            // Calculate and display Estimated Completion Date
+            const completionDate = calculateCompletionDate(parseFloat(etc), lastValue);
+            statsDiv.innerHTML += `<div class="ECD">ECD: ${formatDate(completionDate)}</div>`;
+
+
+
+            document.getElementById('bookStats').appendChild(statsDiv);
+          });
+
+
+
+        })
+    }
+
+    // Function to calculate differences between consecutive values
+    function calculateDifferences(data) {
+      return data.map((value, index, array) => index > 0 ? value - array[index - 1] : null).filter(val => val !== null);
+    }
+
+    // Function to calculate average
+    function calculateAverage(data) {
+      const filteredData = data.filter(val => typeof val === 'number');
+      if (filteredData.length === 0) return 0;
+      const sum = filteredData.reduce((acc, val) => acc + val, 0);
+      return sum / filteredData.length;
+    }
+
+    // Function to calculate median
+    function calculateMedian(data) {
+      const filteredData = data.filter(val => typeof val === 'number');
+      if (filteredData.length === 0) return 0;
+      const sortedData = filteredData.slice().sort((a, b) => a - b);
+      // console.log(sortedData)
+      const mid = Math.floor(sortedData.length / 2);
+      return sortedData.length % 2 !== 0 ? sortedData[mid] : (sortedData[mid - 1] + sortedData[mid]) / 2;
+    }
+
+    // Function to calculate mode
+    function calculateMode(data) {
+      const filteredData = data.filter(val => typeof val === 'number');
+      if (filteredData.length === 0) return '-';
+
+      const counts = {};
+      filteredData.forEach(val => {
+        counts[val] = (counts[val] || 0) + 1;
+      });
+
+      let mode;
+      let maxCount = 0;
+      Object.keys(counts).forEach(key => {
+        if (counts[key] > maxCount) {
+          mode = key;
+          maxCount = counts[key];
+        }
+      });
+
+      return mode || 'No mode';
+    }
+
+    // Function to calculate Estimated Time to Completion (ETC)
+    function calculateETC(remainingPages, medianPagesPerDay, lastValue) {
+      if (medianPagesPerDay === 0) return '-';
+      const daysToComplete = (remainingPages - lastValue) / medianPagesPerDay;
+      return daysToComplete.toFixed(2);
+    }
+
+    // Function to calculate Estimated Completion Date (ECD)
+    function calculateCompletionDate(etc, lastValue) {
+      if (isNaN(etc) || !isFinite(etc)) {
+        return '-';
+      }
+      const today = new Date();
+      const estimatedCompletionDate = new Date(today);
+      estimatedCompletionDate.setDate(today.getDate() + Math.round(etc)); // Round to the nearest day
+      estimatedCompletionDate.setHours(0, 0, 0, 0); // Set time to midnight
+      return estimatedCompletionDate;
+    }
+
+
+    // Function to format the date for display
+    function formatDate(date) {
+      if (date instanceof Date && !isNaN(date)) {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return date.toLocaleDateString(undefined, options);
+      } else {
+        return '-';
+      }
+    }
+
+
+    var egg = new Egg();
+egg.addCode("s,h,o,w", function() {
+  // Select all elements with the class 'stats'
+const statsElements = document.querySelectorAll('.stats');
+
+// Iterate through each element and set visibility to 'hidden'
+statsElements.forEach((element) => {
+  element.style.visibility = 'visible';
+});
+  }).addHook(function(){
+  }).listen();
+
+    // const booksTitle = []
+    // // Define a cache object
+    // const cache = {};
+
+    // // Fetch data for Currently Reading
+    // fetchData('https://openlibrary.org/people/483d8b/books/currently-reading.json', 'currentlyReading')
+    //   .then(data => {
+    //     const arrCurrentlyReading = [];
+
+    //     const booksTitle = [];
+
+    //     // pull out relevant data
+    //     const fetchPromisesCurrentlyReading = data.reading_log_entries.map(d => {
+    //       let obj = {};
+    //       obj.title = d.work.title;
+    //       arrCurrentlyReading.push(obj);
+    //       return obj.title;
+    //     });
+
+    //     Promise.all(fetchPromisesCurrentlyReading)
+    //       .then(bookTitles => {
+    //         booksTitle.push(...bookTitles);
+    //       });
+
+    //   });
+
+      
+
+    // function fetchData(url, cacheKey) {
+    //   if (cache[cacheKey]) {
+    //     // If data is present in the cache, return it
+    //     return Promise.resolve(cache[cacheKey]);
+    //   } else {
+    //     // If data is not in the cache, fetch it from the server
+    //     return fetch(url, { mode: 'cors' })
+    //       .then(response => response.json())
+    //       .then(data => {
+    //         // Store the fetched data in the cache
+    //         cache[cacheKey] = data;
+    //         return data;
+    //       });
+    //   }
+    // }
+
+  </script>
+
+</body>
+
+</html>
