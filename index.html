@@ -87,15 +87,15 @@
       top: 0;
       left: 50%;
       transform: translateX(-50%);
-      opacity: 0;     
+      opacity: 0;
       padding: 1vh;
     }
 
-    #myOctopus{
+    #myOctopus {
       position: absolute;
       right: 1vw;
       transform: translateX(-50%);
-      top:2%;
+      top: 2%;
       z-index: -1;
     }
 
@@ -134,18 +134,18 @@
           const colz = jsData.table.cols.map(heading => heading.label).slice(1);
           const pagesReadData = {};
 
-           // Extract total pages from the second row
-      const totalPageRow = jsData.table.rows[0];
-      if (!totalPageRow) {
-        console.error('No row with total pages found.');
-        return;
-      }
+          // Extract total pages from the second row
+          const totalPageRow = jsData.table.rows[0];
+          if (!totalPageRow) {
+            console.error('No row with total pages found.');
+            return;
+          }
 
-      // Create books object with keys from colz and values from totalPageRow
-      const books = {};
-      colz.forEach((col, index) => {
-        books[col] = totalPageRow.c[index + 1]?.v || 0;
-      });
+          // Create books object with keys from colz and values from totalPageRow
+          const books = {};
+          colz.forEach((col, index) => {
+            books[col] = totalPageRow.c[index + 1]?.v || 0;
+          });
 
           jsData.table.rows.slice(2).forEach(row => {
             colz.forEach((col, index) => {
@@ -169,7 +169,7 @@
             const statsDiv = document.createElement('div');
             statsDiv.classList.add('stats');
 
-              // Generate random rotateX and rotateY values
+            // Generate random rotateX and rotateY values
             const rotateX = getRandomRotation();
             const rotateY = getRandomRotation();
             statsDiv.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
@@ -283,83 +283,30 @@
     }
 
     function getRandomRotation() {
-  return Math.random() * 45 - 5; // Adjust the range as needed
-}
+      return Math.random() * 45 - 5; // Adjust the range as needed
+    }
 
     function degreeToRad(angle) {
       return angle * (Math.PI / 180);
     }
-    
+
     var animationCycle = 0;
     var marginTopBase = 0;
     var frequency = 2;
     var pixelOffset = 20;
     function animateOctopus() {
       const octopus = document.getElementById('myOctopus');
+      const sts = document.getElementById('bookStats');
       octopus.style.marginTop = marginTopBase - Math.sin(degreeToRad(animationCycle * frequency)) * pixelOffset + 'px';
       animationCycle += 1;
+      sts.style.marginTop = marginTopBase - Math.sin(degreeToRad(animationCycle + 1 * frequency)) * pixelOffset + 'px';
+
 
       requestAnimationFrame(animateOctopus);
     }
 
     animateOctopus();
 
-
-      // var egg = new Egg();
-      // egg.addCode("s,h,o,w", function () {
-      //   // Select all elements with the class 'stats'
-      //   const statsElements = document.querySelectorAll('.stats');
-
-      //   // Iterate through each element and set visibility to 'hidden'
-      //   statsElements.forEach((element) => {
-      //     element.style.visibility = 'visible';
-      //   });
-      // }).addHook(function () {
-      // }).listen();
-
-    // const booksTitle = []
-    // // Define a cache object
-    // const cache = {};
-
-    // // Fetch data for Currently Reading
-    // fetchData('https://openlibrary.org/people/483d8b/books/currently-reading.json', 'currentlyReading')
-    //   .then(data => {
-    //     const arrCurrentlyReading = [];
-
-    //     const booksTitle = [];
-
-    //     // pull out relevant data
-    //     const fetchPromisesCurrentlyReading = data.reading_log_entries.map(d => {
-    //       let obj = {};
-    //       obj.title = d.work.title;
-    //       arrCurrentlyReading.push(obj);
-    //       return obj.title;
-    //     });
-
-    //     Promise.all(fetchPromisesCurrentlyReading)
-    //       .then(bookTitles => {
-    //         booksTitle.push(...bookTitles);
-    //       });
-
-    //   });
-
-      
-
-    // function fetchData(url, cacheKey) {
-    //   if (cache[cacheKey]) {
-    //     // If data is present in the cache, return it
-    //     return Promise.resolve(cache[cacheKey]);
-    //   } else {
-    //     // If data is not in the cache, fetch it from the server
-    //     return fetch(url, { mode: 'cors' })
-    //       .then(response => response.json())
-    //       .then(data => {
-    //         // Store the fetched data in the cache
-    //         cache[cacheKey] = data;
-    //         return data;
-    //       });
-    //   }
-    // }
 
   </script>
 
