@@ -6,7 +6,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/egg.js/1.0/egg.min.js"></script>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <title>Book Tracking</title>
   <style>
@@ -44,13 +43,16 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
+      perspective: 2000px;
+      transform-style: preserve-3d;
     }
 
     .stats {
       border: 2px solid var(--txtColor);
       padding: 7px;
       color: var(--txtColor);
-      visibility: hidden;
+      background-color: var(--bgColor);
+      outline: 1px solid transparent;
     }
 
     .pageRemaining {
@@ -89,6 +91,15 @@
       padding: 1vh;
     }
 
+    #myOctopus{
+      position: absolute;
+      right: 1vw;
+      transform: translateX(-50%);
+      top:2%;
+      z-index: -1;
+    }
+
+
     /* Your style here*/
   </style>
 </head>
@@ -99,6 +110,7 @@
   <h1>Book tracking</h1>
   <input type="text" id="invisibleInput">
   <div id="bookStats"></div>
+  <img id="myOctopus" src="pink-octopus-nobg.png" width="100" height="100">
 
 
   <script type="module">
@@ -108,7 +120,7 @@
     const sheetID = '1oCkg-4SfRpT3ZyKhqY0l2T4HhfeWj7oHQjLZrA9dTjM';
     const base = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?`
     const sheetName = 'Book Tracker';
-    const query = encodeURIComponent('Select A,B,C,D,E,F');
+    const query = encodeURIComponent('Select A,B,C,D,E');
     const url = `${base}&sheet=${sheetName}&tq=${query}`;
     const data = [];
 
@@ -119,7 +131,7 @@
         .then(res => res.text())
         .then(rep => {
           const jsData = JSON.parse(rep.substr(47).slice(0, -2));
-          const colz = jsData.table.cols.map(heading => heading.label.toLowerCase().replace(/\s/g, '')).slice(1);
+          const colz = jsData.table.cols.map(heading => heading.label).slice(1);
           const pagesReadData = {};
 
            // Extract total pages from the second row
@@ -156,6 +168,11 @@
           Object.keys(pagesReadData).forEach(book => {
             const statsDiv = document.createElement('div');
             statsDiv.classList.add('stats');
+
+              // Generate random rotateX and rotateY values
+            const rotateX = getRandomRotation();
+            const rotateY = getRandomRotation();
+            statsDiv.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             statsDiv.innerHTML = `<div class="title">${book}:</div>`;
             const differences = calculateDifferences(pagesReadData[book]);
             const lastValue = pagesReadData[book][pagesReadData[book].length - 1];
@@ -265,18 +282,40 @@
       }
     }
 
+    function getRandomRotation() {
+  return Math.random() * 45 - 5; // Adjust the range as needed
+}
 
-    var egg = new Egg();
-egg.addCode("s,h,o,w", function() {
-  // Select all elements with the class 'stats'
-const statsElements = document.querySelectorAll('.stats');
+    function degreeToRad(angle) {
+      return angle * (Math.PI / 180);
+    }
+    
+    var animationCycle = 0;
+    var marginTopBase = 0;
+    var frequency = 2;
+    var pixelOffset = 20;
+    function animateOctopus() {
+      const octopus = document.getElementById('myOctopus');
+      octopus.style.marginTop = marginTopBase - Math.sin(degreeToRad(animationCycle * frequency)) * pixelOffset + 'px';
+      animationCycle += 1;
 
-// Iterate through each element and set visibility to 'hidden'
-statsElements.forEach((element) => {
-  element.style.visibility = 'visible';
-});
-  }).addHook(function(){
-  }).listen();
+      requestAnimationFrame(animateOctopus);
+    }
+
+    animateOctopus();
+
+
+      // var egg = new Egg();
+      // egg.addCode("s,h,o,w", function () {
+      //   // Select all elements with the class 'stats'
+      //   const statsElements = document.querySelectorAll('.stats');
+
+      //   // Iterate through each element and set visibility to 'hidden'
+      //   statsElements.forEach((element) => {
+      //     element.style.visibility = 'visible';
+      //   });
+      // }).addHook(function () {
+      // }).listen();
 
     // const booksTitle = []
     // // Define a cache object
