@@ -1,4 +1,4 @@
-<!-- versione 26/11/2023 -->
+<!-- versione 06/12/2023 -->
 <!DOCTYPE html>
 <html>
 
@@ -188,7 +188,7 @@
             statsDiv.innerHTML += `<p>Mode: ${mode}</p>`;
 
             // Calculate and display Estimated Time to Completion (ETC)
-            const etc = calculateETC(books[book], median, lastValue);
+            const etc = calculateETC(books[book], median, lastValue,average);
             statsDiv.innerHTML += `<div class="ETC">ETC: ${etc} days</div>`;
 
             statsDiv.innerHTML += `<div class="median">Median: ${median}</div>`;
@@ -253,10 +253,16 @@
     }
 
     // Function to calculate Estimated Time to Completion (ETC)
-    function calculateETC(remainingPages, medianPagesPerDay, lastValue) {
-      if (medianPagesPerDay === 0) return '-';
-      const daysToComplete = (remainingPages - lastValue) / medianPagesPerDay;
-      return daysToComplete.toFixed(2);
+    function calculateETC(remainingPages, medianPagesPerDay, lastValue, averagePagesPerDay) {
+      if (medianPagesPerDay === 0 && averagePagesPerDay > 0) {
+        const daysToComplete = (remainingPages - lastValue) / averagePagesPerDay;
+        return daysToComplete.toFixed(2);
+      } else if (medianPagesPerDay > 0) {
+        const daysToComplete = (remainingPages - lastValue) / medianPagesPerDay;
+        return daysToComplete.toFixed(2);
+      } else {
+        return '-';
+      }
     }
 
     // Function to calculate Estimated Completion Date (ECD)
