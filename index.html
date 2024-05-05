@@ -16,7 +16,7 @@
     }
 
     :root {
-      --highlight: #23CE6B;
+      --highlight: #77d1b4;
       --txtColor: #272d2d;
       --bgColor: #F6F8FF;
     }
@@ -101,6 +101,31 @@
     .totPages {
       text-align: center;
       margin-bottom: 0.5em;
+    }
+
+    .progress-bar {
+      width: 100%;
+      background-color: #f3f3f3;
+      border-radius: 25px;
+      overflow: hidden;
+      border: 1px solid black;
+      margin-bottom: 0.5em;
+    }
+
+    .progress {
+      height: 1em;
+      width: 0%;
+      background-color: #77d1b4;
+      transition: width 0.5s;
+    }
+
+    .progress span {
+      color: black;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.8em;
+      font-weight: 600;
     }
 
 
@@ -308,7 +333,32 @@
 
       // Calculate and display remaining pages
       const remainingPages = books[book] - lastValue;
+      const totalPages = books[book];
+      const percentageRead = ((totalPages - remainingPages) / totalPages) * 100;
+
+      // Determine progress bar color based on percentage
+      let color;
+      if (percentageRead <= 25) {
+        color = '#e67373';
+      } else if (percentageRead <= 50) {
+        color = '#e6c973';
+      } else if (percentageRead <= 75) {
+        color = '#73e690';
+      } else {
+        color = '#ac73e6';
+      }
+
+
       statsDiv.innerHTML += `<div class="totPages">${books[book]} pages</div>`;
+
+      // progress bar with percentage value
+      statsDiv.innerHTML += `
+    <div class="progress-bar">
+      <div class="progress" style="width: ${percentageRead}%; background-color: ${color}">
+        <span>${percentageRead.toFixed(2)}%</span>
+      </div>
+    </div>`;
+
       statsDiv.innerHTML += `<div class="pageRemaining">${remainingPages} pages left</div>`;
 
       statsDiv.innerHTML += `<p>Average: ${average.toFixed(2)} 📄</p>`;
