@@ -5,7 +5,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <title>Book Tracking</title>
   <style>
@@ -24,14 +23,15 @@
 
     body {
       padding: 2vh;
-      background-color: var(--bgColor);
+      background-image: url('bg.jpg');
+      background-position: top center;
     }
 
     .title {
       font-weight: 700;
       font-family: Verdana, Geneva, Tahoma, sans-serif;
       text-align: center;
-      margin-bottom: 1em;
+      margin-bottom: 0.5em;
       border-bottom: 2px solid var(--txtColor);
     }
 
@@ -49,24 +49,22 @@
 
     .stats {
       border: 2px solid var(--txtColor);
-      padding: 7px;
+      padding: 1em;
       color: var(--txtColor);
       background-color: var(--bgColor);
       outline: 1px solid transparent;
+      user-select: none;
     }
 
     .pageRemaining {
       font-family: Verdana, Geneva, Tahoma, sans-serif;
+      background-color: var(--highlight);
     }
 
     .ECD {
       background-color: var(--highlight);
     }
 
-    .median {
-      font-weight: 700;
-      background-color: var(--highlight);
-    }
 
     h1 {
       display: block;
@@ -77,6 +75,7 @@
       color: var(--txtColor);
       text-shadow: 0px 0px 5px var(--bgColor), 0px 0px 10px var(--bgColor), 0px 2px 2px var(--txtColor),
         0px 0px 20px var(--bgColor);
+      user-select: none;
     }
 
     /* Make the input invisible but clickable */
@@ -99,6 +98,11 @@
       z-index: -1;
     }
 
+    .totPages {
+      text-align: center;
+      margin-bottom: 0.5em;
+    }
+
 
     /* Your style here*/
   </style>
@@ -116,11 +120,10 @@
   <script type="module">
 
     // Your script here
-    //const sheetID = 'sheetID';
     const sheetID = '1oCkg-4SfRpT3ZyKhqY0l2T4HhfeWj7oHQjLZrA9dTjM';
     const base = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?`
     const sheetName = 'Book Tracker';
-    const query = encodeURIComponent('Select A,B,C,D,E,F');
+    const query = encodeURIComponent('Select A,B,C,D,E,F,G,H,I,J,K');
     const url = `${base}&sheet=${sheetName}&tq=${query}`;
     const data = [];
 
@@ -164,45 +167,7 @@
             });
           });
 
-          // Calculate and display stats
-          Object.keys(pagesReadData).forEach(book => {
-            const statsDiv = document.createElement('div');
-            statsDiv.classList.add('stats');
-
-            // Generate random rotateX and rotateY values
-            const rotateX = getRandomRotation();
-            const rotateY = getRandomRotation();
-            statsDiv.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-            statsDiv.innerHTML = `<div class="title">${book}:</div>`;
-            const differences = calculateDifferences(pagesReadData[book]);
-            const lastValue = pagesReadData[book][pagesReadData[book].length - 1];
-            const average = calculateAverage(differences);
-            const median = calculateMedian(differences);
-            const mode = calculateMode(differences);
-
-            // Calculate and display remaining pages
-            const remainingPages = books[book] - lastValue;
-            statsDiv.innerHTML += `<div class="pageRemaining">${remainingPages} left</div>`;
-
-            statsDiv.innerHTML += `<p>Average: ${average.toFixed(2)}</p>`;
-            statsDiv.innerHTML += `<p>Mode: ${mode}</p>`;
-
-            // Calculate and display Estimated Time to Completion (ETC)
-            const etc = calculateETC(books[book], median, lastValue,average);
-            statsDiv.innerHTML += `<div class="ETC">ETC: ${etc} days</div>`;
-
-            statsDiv.innerHTML += `<div class="median">Median: ${median}</div>`;
-
-            // Calculate and display Estimated Completion Date
-            const completionDate = calculateCompletionDate(parseFloat(etc), lastValue);
-            statsDiv.innerHTML += `<div class="ECD">ECD: ${formatDate(completionDate)}</div>`;
-
-
-
-            document.getElementById('bookStats').appendChild(statsDiv);
-          });
-
-
+          calculateAndDisplayStats(pagesReadData, books);
 
         })
     }
@@ -252,8 +217,8 @@
       return mode || 'No mode';
     }
 
-    // Function to calculate Estimated Time to Completion (ETC)
-    function calculateETC(remainingPages, medianPagesPerDay, lastValue, averagePagesPerDay) {
+    // Function to calculate Estimated day left for completion
+    function calculateDaysLeft(remainingPages, medianPagesPerDay, lastValue, averagePagesPerDay) {
       if (medianPagesPerDay === 0 && averagePagesPerDay > 0) {
         const daysToComplete = (remainingPages - lastValue) / averagePagesPerDay;
         return daysToComplete.toFixed(2);
@@ -289,7 +254,7 @@
     }
 
     function getRandomRotation() {
-      return Math.random() * 45 - 5; // Adjust the range as needed
+      return Math.random() * 25; // Adjust the range as needed
     }
 
     function degreeToRad(angle) {
@@ -298,20 +263,69 @@
 
     var animationCycle = 0;
     var marginTopBase = 0;
-    var frequency = 2;
     var pixelOffset = 20;
+    let frequency = 2;
+
     function animateOctopus() {
-      const octopus = document.getElementById('myOctopus');
-      const sts = document.getElementById('bookStats');
-      octopus.style.marginTop = marginTopBase - Math.sin(degreeToRad(animationCycle * frequency)) * pixelOffset + 'px';
       animationCycle += 1;
-      sts.style.marginTop = marginTopBase - Math.sin(degreeToRad(animationCycle + 1 * frequency)) * pixelOffset + 'px';
-
-
+      const octopus = document.getElementById('myOctopus');
+      octopus.style.marginTop = marginTopBase - Math.sin(degreeToRad(animationCycle * frequency)) * pixelOffset + 'px';
       requestAnimationFrame(animateOctopus);
     }
 
+    function animateStats() {
+      const sts = document.getElementById('bookStats');
+      sts.style.marginTop = marginTopBase - Math.sin(degreeToRad(animationCycle + 1 * frequency)) * pixelOffset + 'px';
+      requestAnimationFrame(animateStats);
+    }
+
     animateOctopus();
+
+    // Calculate and display stats
+    function calculateAndDisplayStats(pagesReadData, books) {
+      Object.keys(pagesReadData).forEach(book => {
+        const statsDiv = createStatsDiv(book, pagesReadData, books);
+        document.getElementById('bookStats').appendChild(statsDiv);
+      });
+    }
+
+
+    // Create stats div for a book
+    function createStatsDiv(book, pagesReadData, books) {
+      const statsDiv = document.createElement('div');
+      statsDiv.classList.add('stats');
+
+      // Generate random rotateX and rotateY values
+      const rotateX = getRandomRotation();
+      const rotateY = getRandomRotation();
+      statsDiv.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      statsDiv.innerHTML = `<div class="title">${book}:</div>`;
+      const differences = calculateDifferences(pagesReadData[book]);
+      const lastValue = pagesReadData[book][pagesReadData[book].length - 1];
+      const average = calculateAverage(differences);
+      const median = calculateMedian(differences);
+      const mode = calculateMode(differences);
+
+      // Calculate and display remaining pages
+      const remainingPages = books[book] - lastValue;
+      statsDiv.innerHTML += `<div class="totPages">${books[book]} pages</div>`;
+      statsDiv.innerHTML += `<div class="pageRemaining">${remainingPages} pages left</div>`;
+
+      statsDiv.innerHTML += `<p>Average: ${average.toFixed(2)} 🗐</p>`;
+      statsDiv.innerHTML += `<p>Mode: ${mode} 🗐</p>`;
+
+      // Calculate and display days to complete
+      const etc = calculateDaysLeft(books[book], median, lastValue, average);
+      statsDiv.innerHTML += `<div class="daysLeft">days left: ${etc}</div>`;
+
+      statsDiv.innerHTML += `<div class="median">Median: ${median} 🗐</div>`;
+
+      // Calculate and display Estimated Completion Date
+      const completionDate = calculateCompletionDate(parseFloat(etc), lastValue);
+      statsDiv.innerHTML += `<div class="ECD">ECD: ${formatDate(completionDate)}</div>`;
+
+      return statsDiv;
+    }
 
 
   </script>
