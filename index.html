@@ -311,14 +311,14 @@
       statsDiv.innerHTML += `<div class="totPages">${books[book]} pages</div>`;
       statsDiv.innerHTML += `<div class="pageRemaining">${remainingPages} pages left</div>`;
 
-      statsDiv.innerHTML += `<p>Average: ${average.toFixed(2)} 🗐</p>`;
-      statsDiv.innerHTML += `<p>Mode: ${mode} 🗐</p>`;
+      statsDiv.innerHTML += `<p>Average: ${average.toFixed(2)} 📄</p>`;
+      statsDiv.innerHTML += `<p>Mode: ${mode} 📄</p>`;
 
       // Calculate and display days to complete
       const etc = calculateDaysLeft(books[book], median, lastValue, average);
       statsDiv.innerHTML += `<div class="daysLeft">days left: ${etc}</div>`;
 
-      statsDiv.innerHTML += `<div class="median">Median: ${median} 🗐</div>`;
+      statsDiv.innerHTML += `<div class="median">Median: ${median} 📄</div>`;
 
       // Calculate and display Estimated Completion Date
       const completionDate = calculateCompletionDate(parseFloat(etc), lastValue);
