@@ -17,8 +17,8 @@
 
     :root {
       --highlight: #77d1b4;
-      --txtColor: #272d2d;
-      --bgColor: #F6F8FF;
+      --bgColor: #272d2d;
+      --txtColor: #F6F8FF;
     }
 
     body {
@@ -59,10 +59,12 @@
     .pageRemaining {
       font-family: Verdana, Geneva, Tahoma, sans-serif;
       background-color: var(--highlight);
+      color: var(--bgColor);
     }
 
     .ECD {
       background-color: var(--highlight);
+      color: var(--bgColor);
     }
 
 
@@ -105,10 +107,10 @@
 
     .progress-bar {
       width: 100%;
-      background-color: #f3f3f3;
+      background-color: var(--txtColor);
       border-radius: 25px;
       overflow: hidden;
-      border: 1px solid black;
+      border: 2px solid var(--txtColor);
       margin-bottom: 0.5em;
     }
 
